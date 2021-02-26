@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from 'react'
-import { FlatList, View, Text, StatusBar, ActivityIndicator, TouchableOpacity } from 'react-native'
+import React, { useEffect, useState, useLayoutEffect } from 'react'
+import { FlatList, View, Text, StatusBar, ActivityIndicator, TouchableOpacity, TextInput, StyleSheet } from 'react-native'
 import Axios from '../configs/Axios'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import Share from 'react-native-share'
+import Feather from 'react-native-vector-icons/Feather'
 
-const Posts = ({ navigation }) => {
+const Posts = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true)
   const [postsList, setPostsList] = useState([])
   const [usersLists, setUserList] = useState([])
   const [comments, setComments] = useState([])
   const [postsPage, setPostsPage] = useState(0)
+  const [addingComment, setAddingComment] = useState(false)
+  const [commentText, setCommentText] = useState({})
 
   const getPosts = async (page = 0) => {
     setLoading(true)
@@ -31,12 +34,33 @@ const Posts = ({ navigation }) => {
     url: 'https://www.dokkanafkar.com/',
   }
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: 'Posts',
+      headerRight: () => (
+        <TouchableOpacity onPress={toggleAddComment} activeOpacity={0.8} style={{ marginRight: 16 }}>
+          <Feather name="plus" color="#FFF" size={25} />
+        </TouchableOpacity>
+      ),
+    })
+  }, [navigation, route])
+
+  useEffect(() => {
+    setPostsList((list) => [...list.filter(({ id }) => id !== route.params?.id)])
+  }, [route.params])
+
   useEffect(() => {
     const getUsers = async () => {
       try {
         const res = await Axios.get('/users')
         const data = res.data
-        setUserList(data)
+        setUserList([
+          ...data,
+          {
+            name: 'Me',
+            id: 0,
+          },
+        ])
       } catch (err) {
         console.log(err)
       }
@@ -66,10 +90,103 @@ const Posts = ({ navigation }) => {
     setPostsPage((page) => page + 1)
     await getPosts(postsPage + 1)
   }
+  const toggleAddComment = () => {
+    setAddingComment((prev) => !prev)
+  }
+
+  const saveComment = () => {
+    setPostsList((prevPosts) => [commentText, ...prevPosts])
+    setCommentText({})
+    toggleAddComment()
+  }
+
+  const cancelAddComment = () => {
+    toggleAddComment()
+    setCommentText({})
+  }
+
+  const onAddPostInputChange = (text, key) => {
+    setCommentText((prev) => ({
+      ...prev,
+      userId: prev.userId || 0,
+      id: prev.id || Math.random() * 99999,
+      [key]: text,
+    }))
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: '#FFF' }}>
       <StatusBar barStyle="light-content" />
+
+      {addingComment && (
+        <View>
+          <TextInput
+            multiline={false}
+            maxLength={300}
+            value={commentText?.title || ''}
+            placeholder="Type anything"
+            style={styles.textInputStyle}
+            clearButtonMode="always"
+            onChangeText={(text) => onAddPostInputChange(text, 'title')}
+          />
+          <TextInput
+            multiline={false}
+            maxLength={300}
+            value={commentText?.body || ''}
+            placeholder="body text"
+            style={styles.textInputStyle}
+            clearButtonMode="always"
+            onChangeText={(text) => onAddPostInputChange(text, 'body')}
+          />
+
+          <View style={{ flexDirection: 'row', width: '100%' }}>
+            <TouchableOpacity
+              onPress={saveComment}
+              style={{
+                backgroundColor: '#ccc8',
+                borderRadius: 10,
+                marginTop: 10,
+                marginRight: 20,
+              }}
+            >
+              <Text
+                style={{
+                  textAlign: 'center',
+                  fontSize: 14,
+                  color: 'grey',
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  fontWeight: '400',
+                }}
+              >
+                Confirm
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={cancelAddComment}
+              style={{
+                backgroundColor: '#ccc8',
+                borderRadius: 10,
+                marginTop: 10,
+              }}
+            >
+              <Text
+                style={{
+                  textAlign: 'center',
+                  fontSize: 14,
+                  color: 'grey',
+                  paddingHorizontal: 10,
+                  fontWeight: '400',
+                  paddingVertical: 5,
+                }}
+              >
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
       <FlatList
         scrollEventThrottle={16}
         data={postsList}
@@ -150,5 +267,24 @@ const Posts = ({ navigation }) => {
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  textInputStyle: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    alignSelf: 'flex-start',
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginHorizontal: 8,
+    marginVertical: 15,
+    height: 40,
+    textAlign: 'left',
+    paddingHorizontal: 10,
+    fontSize: 14,
+    backgroundColor: '#FFF',
+    width: '90%',
+    marginTop: 15,
+  },
+})
 
 export default Posts

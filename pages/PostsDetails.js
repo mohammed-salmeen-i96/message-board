@@ -11,7 +11,7 @@ import {
   StyleSheet,
   StatusBar,
 } from 'react-native'
-// import Feather from 'react-native-vector-icons/Feather'
+import Feather from 'react-native-vector-icons/Feather'
 import Axios from '../configs/Axios'
 
 const PostsDetails = ({ navigation, route }) => {
@@ -37,12 +37,31 @@ const PostsDetails = ({ navigation, route }) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       title,
+      headerRight: () => (
+        <TouchableOpacity onPress={deleteAlert} activeOpacity={0.8} style={{ marginRight: 16 }}>
+          <Feather name="trash" color="#FFF" size={20} />
+        </TouchableOpacity>
+      ),
     })
   }, [navigation, route])
 
   useEffect(() => {
     getComments()
   }, [])
+
+  console.log(id)
+
+  const deleteAlert = () => {
+    Alert.alert('', 'Are you sure you to delete this post', [
+      { text: 'No', onPress: () => {}, style: 'destructive' },
+      {
+        text: 'Yes',
+        onPress: () => {
+          navigation.navigate('Posts', { id })
+        },
+      },
+    ])
+  }
 
   const toggleAddComment = () => {
     setAddingComment((prev) => !prev)
@@ -104,8 +123,8 @@ const PostsDetails = ({ navigation, route }) => {
               <TextInput
                 multiline={false}
                 maxLength={300}
-                value={commentText}
-                placeholder={I18nManager.isRTL ? 'إجابتك' : 'Type anything'}
+                value={commentText?.body || ''}
+                placeholder="Type anything"
                 style={styles.textInputStyle}
                 clearButtonMode="always"
                 onChangeText={(text) => {
