@@ -11,7 +11,6 @@ const Posts = ({ navigation }) => {
   const [usersLists, setUserList] = useState([])
   const [comments, setComments] = useState([])
   const [postsPage, setPostsPage] = useState(0)
-  const [activeId, setActiveId] = useState()
 
   const getPosts = async (page = 0) => {
     setLoading(true)
@@ -45,11 +44,10 @@ const Posts = ({ navigation }) => {
 
     const getComments = async () => {
       try {
-        const res = await Axios.get(`/comments`)
+        const res = await Axios.get('/comments')
         const data = res.data
         setComments(data)
         // console.log(comments)
-        setLoading(false)
       } catch (err) {
         console.log(err)
         setLoading(false)
@@ -83,8 +81,6 @@ const Posts = ({ navigation }) => {
         renderItem={({ item }) => {
           const user = usersLists.find((u) => u.id === item.userId)
           const comment = comments.filter((itm) => itm.postId === item.id)
-          let active = item.id === activeId ? 'heart' : 'hearto'
-          // console.log(`${user.name}`, 'is ', active)
           return (
             <View style={{ flex: 1, alignItems: 'center', marginTop: 20 }}>
               <TouchableOpacity
@@ -119,15 +115,7 @@ const Posts = ({ navigation }) => {
                   >
                     {comment.length}
                   </Text>
-                  <TouchableOpacity
-                    activeOpacity={0.5}
-                    style={{
-                      paddingLeft: 20,
-                    }}
-                    onPress={() => setActiveId(item.id)}
-                  >
-                    <AntDesign name={active} size={18} />
-                  </TouchableOpacity>
+
                   <TouchableOpacity
                     activeOpacity={0.8}
                     onPress={() => {

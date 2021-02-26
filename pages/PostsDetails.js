@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState, useEffect, useRef } from 'react'
+import React, { useLayoutEffect, useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -11,27 +11,16 @@ import {
   StyleSheet,
   StatusBar,
 } from 'react-native'
-import { Transition, Transitioning } from 'react-native-reanimated'
-import Feather from 'react-native-vector-icons/Feather'
+// import Feather from 'react-native-vector-icons/Feather'
 import Axios from '../configs/Axios'
-
-const transition = (
-  <Transition.Together>
-    <Transition.In type="fade" durationMs={200} />
-    <Transition.Change />
-    <Transition.Out type="fade" durationMs={200} />
-  </Transition.Together>
-)
 
 const PostsDetails = ({ navigation, route }) => {
   const { title, body, id } = route.params.item
   const [comments, setComments] = useState([])
   const [loading, setLoading] = useState(true)
-  const [addComment, setAddComment] = useState(false)
-  const [currentIndex, setCurrentIndex] = useState(null)
+  const [addingComment, setAddingComment] = useState(false)
   const [commentText, setCommentText] = useState({})
-  const [postComment, setPostComment] = useState('')
-  const ref = useRef()
+
   const getComments = async () => {
     try {
       const res = await Axios.get(`/comments?postId=${id}`)
@@ -55,7 +44,20 @@ const PostsDetails = ({ navigation, route }) => {
     getComments()
   }, [])
 
-  // console.log(commentText)
+  const toggleAddComment = () => {
+    setAddingComment((prev) => !prev)
+  }
+
+  const saveComment = () => {
+    setComments((prevComments) => [commentText, ...prevComments])
+    setCommentText({})
+    toggleAddComment()
+  }
+
+  const cancelAddComment = () => {
+    toggleAddComment()
+    setCommentText({})
+  }
 
   return (
     <ScrollView
@@ -78,30 +80,96 @@ const PostsDetails = ({ navigation, route }) => {
           </Text>
         </View>
         <View style={{ marginHorizontal: 16, marginTop: 40 }}>
-          <Text
-            style={{
-              fontSize: 20,
-              color: '#495057',
-              textAlign: 'left',
-              fontWeight: 'bold',
-            }}
-          >
-            {'Comments'}
-          </Text>
-          {comments.length ? (
-            <>
-              {comments?.map((item, index) => (
-                <Transitioning.View
-                  ref={ref}
-                  transition={transition}
-                  key={item.id}
-                  style={{ flex: 1, alignItems: 'center', marginTop: 20 }}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text
+              style={{
+                fontSize: 20,
+                color: '#495057',
+                textAlign: 'left',
+                fontWeight: 'bold',
+              }}
+            >
+              Comments
+            </Text>
+
+            {!addingComment && (
+              <TouchableOpacity onPress={toggleAddComment}>
+                <Text style={{ fontSize: 30 }}>+</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {addingComment && (
+            <View>
+              <TextInput
+                multiline={false}
+                maxLength={300}
+                value={commentText}
+                placeholder={I18nManager.isRTL ? 'إجابتك' : 'Type anything'}
+                style={styles.textInputStyle}
+                clearButtonMode="always"
+                onChangeText={(text) => {
+                  setCommentText({
+                    name: 'Me',
+                    body: text,
+                  })
+                }}
+              />
+
+              <View style={{ flexDirection: 'row', width: '100%' }}>
+                <TouchableOpacity
+                  onPress={saveComment}
+                  style={{
+                    backgroundColor: '#ccc8',
+                    borderRadius: 10,
+                    marginTop: 10,
+                    marginRight: 20,
+                  }}
                 >
-                  <TouchableOpacity
-                    onPress={() => {
-                      ref.current.animateNextTransition()
-                      setCurrentIndex(index === currentIndex ? null : index)
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      fontSize: 14,
+                      color: 'grey',
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      fontWeight: '400',
+                      flex: 1,
                     }}
+                  >
+                    Confirm
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={cancelAddComment}
+                  style={{
+                    backgroundColor: '#ccc8',
+                    borderRadius: 10,
+                    marginTop: 10,
+                  }}
+                >
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      fontSize: 14,
+                      color: 'grey',
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      fontWeight: '400',
+                      flex: 1,
+                    }}
+                  >
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {comments.length
+            ? comments?.map((item, index) => (
+                <View key={index} style={{ flex: 1, alignItems: 'center', marginTop: 20 }}>
+                  <TouchableOpacity
                     activeOpacity={0.8}
                     style={{
                       width: '100%',
@@ -109,108 +177,17 @@ const PostsDetails = ({ navigation, route }) => {
                       borderRadius: 10,
                     }}
                   >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Text numberOfLines={1} style={{ padding: 10, maxWidth: 250 }}>
-                        {item?.name}
-                      </Text>
-                      <Feather name="chevron-down" style={{ paddingHorizontal: 16 }} size={18} />
-                    </View>
+                    <Text numberOfLines={1} style={{ padding: 10, maxWidth: 250 }}>
+                      {item?.name}
+                    </Text>
+
                     <Text numberOfLines={1} style={{ padding: 10 }}>
                       {item?.body}
                     </Text>
-                    {index === currentIndex && postComment !== '' && (
-                      <View style={{}}>
-                        <Text
-                          style={{
-                            paddingHorizontal: 16,
-                            fontSize: 14,
-                          }}
-                        >
-                          {'Reply:'}
-                        </Text>
-                        <Text
-                          style={{
-                            paddingHorizontal: 16,
-                            marginVertical: 10,
-                          }}
-                        >
-                          {postComment}
-                        </Text>
-                      </View>
-                    )}
-                    {index === currentIndex && addComment && (
-                      <TextInput
-                        multiline={false}
-                        maxLength={300}
-                        placeholder={I18nManager.isRTL ? 'إجابتك' : 'Type anything'}
-                        style={styles.textInputStyle}
-                        onChangeText={(text) => {
-                          setCommentText({
-                            answer: text,
-                            id: item.id,
-                          })
-                        }}
-                        clearButtonMode="always"
-                        onSubmitEditing={() => {
-                          setPostComment(commentText.answer)
-                          setCommentText('')
-                        }}
-                      />
-                    )}
                   </TouchableOpacity>
-                  {index === currentIndex && (
-                    <View style={{ flexDirection: 'row', width: '100%' }}>
-                      <TouchableOpacity
-                        onPress={() => setAddComment(true)}
-                        style={{
-                          backgroundColor: '#ccc8',
-                          borderRadius: 10,
-                          marginTop: 10,
-                          marginRight: 20,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            textAlign: 'center',
-                            fontSize: 14,
-                            color: 'grey',
-                            paddingHorizontal: 10,
-                            paddingVertical: 5,
-                            fontWeight: '400',
-                            flex: 1,
-                          }}
-                        >
-                          {'Add Comment'}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => setAddComment(false)}
-                        style={{
-                          backgroundColor: '#ccc8',
-                          borderRadius: 10,
-                          marginTop: 10,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            textAlign: 'center',
-                            fontSize: 14,
-                            color: 'grey',
-                            paddingHorizontal: 10,
-                            paddingVertical: 5,
-                            fontWeight: '400',
-                            flex: 1,
-                          }}
-                        >
-                          {'Cancel'}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                </Transitioning.View>
-              ))}
-            </>
-          ) : null}
+                </View>
+              ))
+            : null}
           {loading && (
             <View
               style={{
