@@ -6,8 +6,8 @@ import Share from 'react-native-share'
 
 const PostComponent = ({ navigation, item, user, comment }) => {
   const shareOptions = {
-    title: 'Message Board',
-    message: 'Check this cool app', // TODO change content
+    title: 'Check this awesome item',
+    message: `(${item.title})`,
     url: 'https://www.dokkanafkar.com/',
   }
   return (

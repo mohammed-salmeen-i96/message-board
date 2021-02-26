@@ -14,6 +14,7 @@ const Posts = ({ navigation, route }) => {
   const [postsPage, setPostsPage] = useState(0)
   const [addingPost, setAddingComment] = useState(false)
 
+  // Paginating by 10 times for each page
   const getPosts = async (page = 0) => {
     setLoading(true)
 
@@ -27,6 +28,7 @@ const Posts = ({ navigation, route }) => {
     setLoading(false)
   }
 
+  // Adding add button to topbar
   useLayoutEffect(() => {
     navigation.setOptions({
       title: 'Posts',
@@ -38,11 +40,26 @@ const Posts = ({ navigation, route }) => {
     })
   }, [navigation, route])
 
+  /**
+   ** Faking the delete of a post without an API required a fake solution.
+   ** Either by navigating and sending the id (like below) and filtering according to it
+   ** or by using a state mangement methodology like Context API, React Query, Mobx or Redux etc..
+   */
   useEffect(() => {
     setPostsList((list) => [...list.filter(({ id }) => id !== route.params?.id)])
   }, [route.params])
 
+  /**
+   ** Using promise.all to call all the APIs at the same time
+   ** withouting awaiting uncessecarliy for each other
+   */
   useEffect(() => {
+    /**
+     ** These functions will only be used once,
+     ** so in every re-render they will be re-rendered as well
+     ** either we add them here, or add them on top and we use useCallback hook
+     ** and add them to the dependency array
+     */
     const getUsers = async () => {
       try {
         const res = await Axios.get('/users')
@@ -59,6 +76,7 @@ const Posts = ({ navigation, route }) => {
       }
     }
 
+    // ! This API was only called to see the number of comments per post
     const getComments = async () => {
       try {
         const res = await Axios.get('/comments')
@@ -78,6 +96,11 @@ const Posts = ({ navigation, route }) => {
     fetchData()
   }, [])
 
+  /**
+   ** Checking if page is less than 10 since jsonplaceholder doesn't return the last page
+   ** neither it returns the total of items
+   ** then calling the next page of the current page
+   */
   const paginatePosts = async () => {
     if (postsPage >= 10 || loading) return
     setPostsPage((page) => page + 1)
@@ -100,6 +123,7 @@ const Posts = ({ navigation, route }) => {
         onEndReached={paginatePosts}
         onEndReachedThreshold={0.1}
         renderItem={({ item }) => {
+          // ! User and comments list should return with the post item
           const user = usersLists.find((u) => u.id === item.userId)
           const comment = comments.filter((itm) => itm.postId === item.id)
           return <PostListItem navigation={navigation} item={item} user={user} comment={comment} />

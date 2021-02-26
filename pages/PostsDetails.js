@@ -26,6 +26,7 @@ const PostsDetails = ({ navigation, route }) => {
     }
   }
 
+  // Adding a delete button to delete the post
   useLayoutEffect(() => {
     navigation.setOptions({
       title,
@@ -41,14 +42,13 @@ const PostsDetails = ({ navigation, route }) => {
     getComments()
   }, [])
 
-  console.log(id)
-
   const deleteAlert = () => {
     Alert.alert('', 'Are you sure you to delete this post', [
       { text: 'No', onPress: () => {}, style: 'destructive' },
       {
         text: 'Yes',
         onPress: () => {
+          // * In real life scenario this should call an API
           navigation.navigate('Posts', { id })
         },
       },
@@ -119,7 +119,7 @@ const PostsDetails = ({ navigation, route }) => {
             />
           )}
 
-          {comments.length ? comments?.map((item, index) => <CommentListItem key={index} item={item} />) : null}
+          {comments.length ? comments.map((item, index) => <CommentListItem key={index} item={item} />) : null}
           {loading && <LoadingItem />}
         </View>
       </View>
