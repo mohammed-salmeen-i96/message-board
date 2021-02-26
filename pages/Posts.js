@@ -13,7 +13,7 @@ const Posts = ({ navigation, route }) => {
   const [comments, setComments] = useState([])
   const [postsPage, setPostsPage] = useState(0)
   const [addingComment, setAddingComment] = useState(false)
-  const [commentText, setCommentText] = useState({})
+  const [postText, setPostText] = useState({})
 
   const getPosts = async (page = 0) => {
     setLoading(true)
@@ -94,19 +94,19 @@ const Posts = ({ navigation, route }) => {
     setAddingComment((prev) => !prev)
   }
 
-  const saveComment = () => {
-    setPostsList((prevPosts) => [commentText, ...prevPosts])
-    setCommentText({})
+  const savePost = () => {
+    setPostsList((prevPosts) => [postText, ...prevPosts])
+    setPostText({})
     toggleAddComment()
   }
 
-  const cancelAddComment = () => {
+  const cancelAddPost = () => {
     toggleAddComment()
-    setCommentText({})
+    setPostText({})
   }
 
   const onAddPostInputChange = (text, key) => {
-    setCommentText((prev) => ({
+    setPostText((prev) => ({
       ...prev,
       userId: prev.userId || 0,
       id: prev.id || Math.random() * 99999,
@@ -123,8 +123,8 @@ const Posts = ({ navigation, route }) => {
           <TextInput
             multiline={false}
             maxLength={300}
-            value={commentText?.title || ''}
-            placeholder="Type anything"
+            value={postText?.title || ''}
+            placeholder="title"
             style={styles.textInputStyle}
             clearButtonMode="always"
             onChangeText={(text) => onAddPostInputChange(text, 'title')}
@@ -132,8 +132,8 @@ const Posts = ({ navigation, route }) => {
           <TextInput
             multiline={false}
             maxLength={300}
-            value={commentText?.body || ''}
-            placeholder="body text"
+            value={postText?.body || ''}
+            placeholder="description"
             style={styles.textInputStyle}
             clearButtonMode="always"
             onChangeText={(text) => onAddPostInputChange(text, 'body')}
@@ -141,12 +141,12 @@ const Posts = ({ navigation, route }) => {
 
           <View style={{ flexDirection: 'row', width: '100%' }}>
             <TouchableOpacity
-              onPress={saveComment}
+              onPress={savePost}
               style={{
                 backgroundColor: '#ccc8',
                 borderRadius: 10,
                 marginTop: 10,
-                marginRight: 20,
+                marginHorizontal: 20,
               }}
             >
               <Text
@@ -163,7 +163,7 @@ const Posts = ({ navigation, route }) => {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={cancelAddComment}
+              onPress={cancelAddPost}
               style={{
                 backgroundColor: '#ccc8',
                 borderRadius: 10,
