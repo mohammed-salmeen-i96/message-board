@@ -9,6 +9,7 @@ import {
   I18nManager,
   TextInput,
   StyleSheet,
+  StatusBar,
 } from 'react-native'
 import { Transition, Transitioning } from 'react-native-reanimated'
 import Feather from 'react-native-vector-icons/Feather'
@@ -36,7 +37,7 @@ const PostsDetails = ({ navigation, route }) => {
       const res = await Axios.get(`/comments?postId=${id}`)
       const data = res.data
       setComments(data)
-      console.log(comments)
+      // console.log(comments)
       setLoading(false)
     } catch (err) {
       console.log(err)
@@ -57,8 +58,13 @@ const PostsDetails = ({ navigation, route }) => {
   // console.log(commentText)
 
   return (
-    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: '#FFF' }}
+      contentContainerStyle={{ paddingBottom: 40 }}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={{ marginTop: 40 }}>
+        <StatusBar barStyle="light-content" />
         <View style={{ marginHorizontal: 16 }}>
           <Text
             style={{
@@ -112,7 +118,7 @@ const PostsDetails = ({ navigation, route }) => {
                     <Text numberOfLines={1} style={{ padding: 10 }}>
                       {item?.body}
                     </Text>
-                    {index === currentIndex && (
+                    {index === currentIndex && postComment !== '' && (
                       <View style={{}}>
                         <Text
                           style={{
@@ -125,7 +131,7 @@ const PostsDetails = ({ navigation, route }) => {
                         <Text
                           style={{
                             paddingHorizontal: 16,
-                            marginTop: 10,
+                            marginVertical: 10,
                           }}
                         >
                           {postComment}
@@ -218,7 +224,7 @@ const PostsDetails = ({ navigation, route }) => {
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
               }}
             >
-              <ActivityIndicator animating={true} color="#2650E9" size="small" />
+              <ActivityIndicator animating={true} color="#ccc8" size="small" />
             </View>
           )}
         </View>

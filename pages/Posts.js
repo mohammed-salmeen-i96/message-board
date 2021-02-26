@@ -70,8 +70,8 @@ const Posts = ({ navigation }) => {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <StatusBar barStyle="dark-content" />
+    <View style={{ flex: 1, backgroundColor: '#FFF' }}>
+      <StatusBar barStyle="light-content" />
       <FlatList
         scrollEventThrottle={16}
         data={postsList}

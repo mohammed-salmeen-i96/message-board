@@ -18,7 +18,16 @@ const Stack = createStackNavigator()
 const App = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Posts">
+      <Stack.Navigator
+        initialRouteName="Posts"
+        screenOptions={() => ({
+          headerStyle: { backgroundColor: '#3452a3', borderBottomWidth: 0, elevation: 0, shadowOpacity: 0 },
+          headerTintColor: '#FFF',
+          headerTitleAlign: 'center',
+          headerTitleStyle: { alignSelf: 'center', color: '#FFF' },
+          headerBackTitle: ' ',
+        })}
+      >
         <Stack.Screen name="Posts" component={Posts} />
         <Stack.Screen options={{ headerLeft: BackItem }} name="PostsDetails" component={PostsDetails} />
       </Stack.Navigator>
