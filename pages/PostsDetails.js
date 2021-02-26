@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useState, useEffect } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, I18nManager } from 'react-native'
 import Axios from '../configs/Axios'
 
 const PostsDetails = ({ navigation, route }) => {
@@ -20,37 +20,61 @@ const PostsDetails = ({ navigation, route }) => {
   }
 
   useLayoutEffect(() => {
-    navigation.setOptions({ title })
-  })
+    navigation.setOptions({
+      title,
+    })
+  }, [navigation, route])
 
   useEffect(() => {
     getComments()
   }, [])
 
-  console.log(route.params.item)
+  // console.log({ comments })
+
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
       <View style={{ marginTop: 40 }}>
         <View style={{ marginHorizontal: 16 }}>
-          <Text style={{ fontSize: 16, color: '#495057', textAlign: 'left', fontWeight: '500' }}>{body}</Text>
+          <Text
+            style={{
+              fontSize: 16,
+              color: '#495057',
+              textAlign: 'left',
+              fontWeight: '500',
+            }}
+          >
+            {body ? body : ''}
+          </Text>
         </View>
         <View style={{ marginHorizontal: 16, marginTop: 40 }}>
-          <Text style={{ fontSize: 20, color: '#495057', textAlign: 'left', fontWeight: 'bold' }}>{'Comments'}</Text>
+          <Text
+            style={{
+              fontSize: 20,
+              color: '#495057',
+              textAlign: 'left',
+              fontWeight: 'bold',
+            }}
+          >
+            {'Comments'}
+          </Text>
           {comments.length ? (
             <>
-              {comments.map((item) => (
-                <View style={{ flex: 1, alignItems: 'center', marginTop: 20 }}>
+              {comments?.map((item) => (
+                <View key={item.id} style={{ flex: 1, alignItems: 'center', marginTop: 20 }}>
                   <TouchableOpacity
-                    key={item.id}
                     onPress={() => {}}
                     activeOpacity={0.8}
-                    style={{ width: '100%', backgroundColor: '#ccc', borderRadius: 10 }}
+                    style={{
+                      width: '100%',
+                      backgroundColor: '#ccc8',
+                      borderRadius: 10,
+                    }}
                   >
                     <Text numberOfLines={1} style={{ padding: 10 }}>
-                      {/* {user?.name} */}
+                      {item?.name}
                     </Text>
                     <Text numberOfLines={1} style={{ padding: 10 }}>
-                      {/* {item.title} */}
+                      {item?.body}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -61,6 +85,7 @@ const PostsDetails = ({ navigation, route }) => {
             <View
               style={{
                 position: 'absolute',
+                top: 0,
                 bottom: 0,
                 left: 0,
                 right: 0,
