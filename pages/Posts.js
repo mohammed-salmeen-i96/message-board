@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react'
-import { FlatList, View, Text, StatusBar, ActivityIndicator, TouchableOpacity, TextInput, StyleSheet } from 'react-native'
+import { FlatList, View, StatusBar, TouchableOpacity } from 'react-native'
 import Axios from '../configs/Axios'
-import FontAwesome from 'react-native-vector-icons/FontAwesome'
-import AntDesign from 'react-native-vector-icons/AntDesign'
-import Share from 'react-native-share'
 import Feather from 'react-native-vector-icons/Feather'
+import PostListItem from '../components/PostListItem'
+import AddPostForm from '../components/AddPostForm'
+import LoadingItem from '../components/LoadingItem'
 
 const Posts = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true)
@@ -12,8 +12,7 @@ const Posts = ({ navigation, route }) => {
   const [usersLists, setUserList] = useState([])
   const [comments, setComments] = useState([])
   const [postsPage, setPostsPage] = useState(0)
-  const [addingComment, setAddingComment] = useState(false)
-  const [postText, setPostText] = useState({})
+  const [addingPost, setAddingComment] = useState(false)
 
   const getPosts = async (page = 0) => {
     setLoading(true)
@@ -26,12 +25,6 @@ const Posts = ({ navigation, route }) => {
       console.log(err)
     }
     setLoading(false)
-  }
-
-  const shareOptions = {
-    title: 'Message Board',
-    message: 'Check this cool app', // TODO change content
-    url: 'https://www.dokkanafkar.com/',
   }
 
   useLayoutEffect(() => {
@@ -94,99 +87,10 @@ const Posts = ({ navigation, route }) => {
     setAddingComment((prev) => !prev)
   }
 
-  const savePost = () => {
-    setPostsList((prevPosts) => [postText, ...prevPosts])
-    setPostText({})
-    toggleAddComment()
-  }
-
-  const cancelAddPost = () => {
-    toggleAddComment()
-    setPostText({})
-  }
-
-  const onAddPostInputChange = (text, key) => {
-    setPostText((prev) => ({
-      ...prev,
-      userId: prev.userId || 0,
-      id: prev.id || Math.random() * 99999,
-      [key]: text,
-    }))
-  }
-
   return (
     <View style={{ flex: 1, backgroundColor: '#FFF' }}>
       <StatusBar barStyle="light-content" />
-
-      {addingComment && (
-        <View>
-          <TextInput
-            multiline={false}
-            maxLength={300}
-            value={postText?.title || ''}
-            placeholder="title"
-            style={styles.textInputStyle}
-            clearButtonMode="always"
-            onChangeText={(text) => onAddPostInputChange(text, 'title')}
-          />
-          <TextInput
-            multiline={false}
-            maxLength={300}
-            value={postText?.body || ''}
-            placeholder="description"
-            style={styles.textInputStyle}
-            clearButtonMode="always"
-            onChangeText={(text) => onAddPostInputChange(text, 'body')}
-          />
-
-          <View style={{ flexDirection: 'row', width: '100%' }}>
-            <TouchableOpacity
-              onPress={savePost}
-              style={{
-                backgroundColor: '#ccc8',
-                borderRadius: 10,
-                marginTop: 10,
-                marginHorizontal: 20,
-              }}
-            >
-              <Text
-                style={{
-                  textAlign: 'center',
-                  fontSize: 14,
-                  color: 'grey',
-                  paddingHorizontal: 10,
-                  paddingVertical: 5,
-                  fontWeight: '400',
-                }}
-              >
-                Confirm
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={cancelAddPost}
-              style={{
-                backgroundColor: '#ccc8',
-                borderRadius: 10,
-                marginTop: 10,
-              }}
-            >
-              <Text
-                style={{
-                  textAlign: 'center',
-                  fontSize: 14,
-                  color: 'grey',
-                  paddingHorizontal: 10,
-                  fontWeight: '400',
-                  paddingVertical: 5,
-                }}
-              >
-                Cancel
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-
+      {addingPost && <AddPostForm setPostsList={setPostsList} toggleAddComment={toggleAddComment} />}
       <FlatList
         scrollEventThrottle={16}
         data={postsList}
@@ -198,93 +102,12 @@ const Posts = ({ navigation, route }) => {
         renderItem={({ item }) => {
           const user = usersLists.find((u) => u.id === item.userId)
           const comment = comments.filter((itm) => itm.postId === item.id)
-          return (
-            <View style={{ flex: 1, alignItems: 'center', marginTop: 20 }}>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('PostsDetails', { item })}
-                activeOpacity={0.8}
-                style={{
-                  width: '90%',
-                  backgroundColor: '#ccc9',
-                  borderRadius: 10,
-                }}
-              >
-                <Text numberOfLines={1} style={{ padding: 10 }}>
-                  {user?.name}
-                </Text>
-                <Text numberOfLines={1} style={{ padding: 10 }}>
-                  {item.title}
-                </Text>
-                <View
-                  style={{
-                    paddingBottom: 10,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <FontAwesome name="comments-o" size={18} />
-                  <Text
-                    style={{
-                      paddingLeft: 10,
-                      paddingRight: 20,
-                    }}
-                  >
-                    {comment.length}
-                  </Text>
-
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => {
-                      Share.open(shareOptions)
-                    }}
-                    style={{
-                      paddingLeft: 40,
-                    }}
-                  >
-                    <AntDesign name="sharealt" size={18} />
-                  </TouchableOpacity>
-                </View>
-              </TouchableOpacity>
-            </View>
-          )
+          return <PostListItem navigation={navigation} item={item} user={user} comment={comment} />
         }}
-        ListFooterComponent={
-          loading && (
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: '#F9FAFB',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <ActivityIndicator color="#2650E9" style={{ height: 100 }} />
-            </View>
-          )
-        }
+        ListFooterComponent={loading && <LoadingItem />}
       />
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  textInputStyle: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    alignSelf: 'flex-start',
-    borderRadius: 8,
-    overflow: 'hidden',
-    marginHorizontal: 8,
-    marginVertical: 15,
-    height: 40,
-    textAlign: 'left',
-    paddingHorizontal: 10,
-    fontSize: 14,
-    backgroundColor: '#FFF',
-    width: '90%',
-    marginTop: 15,
-  },
-})
 
 export default Posts
